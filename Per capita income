@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+
+# Upload file (Colab)
+from google.colab import files
+uploaded = files.upload()
+
+# Load dataset
+df = pd.read_csv(next(iter(uploaded)))
+
+# Check data
+print(df.head())
+print(df.isnull().sum())   # Check missing values
+
+# If any missing values exist
+df = df.dropna()
+
+# Define features and target
+X = df[['YearsExperience']]
+y = df['Salary']
+
+# Create model
+model = LinearRegression()
+model.fit(X, y)
+
+# Predict salary for 12 years experience
+prediction = model.predict(pd.DataFrame({'YearsExperience':[12]}))
+
+
+
+
+
+
+plt.scatter(X, y, color='blue')
+plt.plot(X, model.predict(X), color='red')
+plt.xlabel("Years of Experience")
+plt.ylabel("Salary")
+plt.title("Experience vs Salary")
+plt.show()
+
+print("Predicted Salary for 12 years experience:", prediction[0])
