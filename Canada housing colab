@@ -1,0 +1,38 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+
+# Upload file in Colab
+from google.colab import files
+uploaded = files.upload()
+
+# Load dataset
+df = pd.read_csv(next(iter(uploaded)))
+
+# Check dataset
+print(df.head())
+print(df.isnull().sum())   # Check for missing values
+
+# If any missing values exist (optional safety step)
+df = df.dropna()
+
+# Define X and Y
+X = df[['year']]
+y = df['per capita income (US$)']
+
+# Create and train model
+model = LinearRegression()
+model.fit(X, y)
+
+# Predict income for year 2020
+prediction_2020 = model.predict(pd.DataFrame({'year':[2020]}))
+
+print("Predicted per capita income in 2020:", prediction_2020[0])
+
+plt.scatter(X, y, color='blue')
+plt.plot(X, model.predict(X), color='red')
+plt.xlabel("Year")
+plt.ylabel("Per Capita Income (US$)")
+plt.title("Year vs Per Capita Income")
+plt.show()
