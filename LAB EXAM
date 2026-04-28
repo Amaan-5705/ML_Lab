@@ -1,0 +1,285 @@
+# Importing Necessary Libraries
+import pandas as pd
+import numpy as np
+np.__version__
+
+
+import pandas as pd
+import zipfile
+from google.colab import files
+
+# Upload file
+uploaded = files.upload()
+
+# Extract zip
+with zipfile.ZipFile('archive (4).zip', 'r') as zip_ref:
+    zip_ref.extractall('/content/')
+
+# Read CSV
+data = pd.read_csv('/content/data.csv')
+
+print(f"Dataset successfully Imported of Shape : {data.shape}")
+
+# First 5 Columns Data
+data.head()
+# Describing Numerical Values of the Dataset
+data.describe()
+# Information (not-null count and data type) About Each Column
+data.info()
+# Number of Unique Values in each column
+data.nunique()
+# Datatypes of all Columns
+data.dtypes
+# Removing Irrelevant Data colunms
+# Names of all columns
+data.columns
+
+# Here, we can see that columns ['mid', 'date', 'venue', 'batsman', 'bowler', 'striker', 'non-striker'] won't provide any relevant information for our model to train
+
+irrelevant = ['mid', 'date', 'venue','batsman', 'bowler', 'striker', 'non-striker']
+print(f'Before Removing Irrelevant Columns : {data.shape}')
+data = data.drop(irrelevant, axis=1) # Drop Irrelevant Columns
+print(f'After Removing Irrelevant Columns : {data.shape}')
+data.head()
+
+# ==========================================
+# Multiple Linear Regression
+# Important Features + Performance Metrics
+# ==========================================
+
+import pandas as pd
+import numpy as np
+import zipfile
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# ------------------------------------------
+# 1. Upload ZIP File
+# ------------------------------------------
+from google.colab import files
+uploaded = files.upload()
+
+# ------------------------------------------
+# 2. Extract ZIP
+# ------------------------------------------
+with zipfile.ZipFile('archive (4).zip', 'r') as zip_ref:
+    zip_ref.extractall('/content/')
+
+# ------------------------------------------
+# 3. Load Dataset
+# ------------------------------------------
+data = pd.read_csv('/content/data.csv')
+
+print("Dataset Shape :", data.shape)
+print(data.head())
+
+# Drop irrelevant/non-numeric columns
+columns_to_drop = ['mid', 'date', 'venue', 'batting_team', 'bowling_team', 'batsman', 'bowler', 'striker', 'non-striker']
+data = data.drop(columns_to_drop, axis=1)
+print(f'Shape after dropping irrelevant columns: {data.shape}')
+
+# ------------------------------------------
+# 4. Features and Target
+# Assuming last column = Runs Scored
+# ------------------------------------------
+X = data.iloc[:, :-1]
+y = data.iloc[:, -1]
+
+# ------------------------------------------
+# 5. Split Data
+# ------------------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ------------------------------------------
+# 6. Train Model
+# ------------------------------------------
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# ------------------------------------------
+# 7. Prediction
+# ------------------------------------------
+y_pred = model.predict(X_test)
+
+# ------------------------------------------
+# 8. Most Influential Features
+# ------------------------------------------
+coef_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Coefficient': model.coef_
+})
+
+coef_df['Absolute_Value'] = abs(coef_df['Coefficient'])
+coef_df = coef_df.sort_values(by='Absolute_Value', ascending=False)
+
+print("\nMost Influential Features Predicting Runs Scored:")
+print(coef_df[['Feature', 'Coefficient']])
+
+# ------------------------------------------
+# 9. Performance Metrics
+# ------------------------------------------
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print("\nModel Performance:")
+print("Mean Absolute Error :", mae)
+print("Mean Squared Error  :", mse)
+print("Root Mean Squared Error :", rmse)
+print("R2 Score :", r2)
+
+# ------------------------------------------
+# 10. Graph
+# ------------------------------------------
+plt.scatter(y_test, y_pred)
+plt.xlabel("Actual Runs")
+plt.ylabel("Predicted Runs")
+plt.title("Actual vs Predicted Runs")
+plt.show()
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+
+# To fix the KeyError, 'batting_team' and 'bowling_team' must be present in the DataFrame.
+# The 'data' DataFrame was modified in a previous cell (QZVRpSooiiif) where these columns were dropped.
+# Here, we reload the original dataset to ensure these columns are available for encoding.
+# Note: This operation will overwrite the 'data' DataFrame from any preceding cells if this cell is run.
+data = pd.read_csv('/content/data.csv')
+
+le = LabelEncoder()
+for col in ['batting_team', 'bowling_team']:
+  data[col] = le.fit_transform(data[col])
+
+print("Columns 'batting_team' and 'bowling_team' have been label encoded.")
+data.head()
+
+def predict_score(runs, wickets, overs, runs_last_5, wickets_last_5, model=model):
+  prediction_array = [runs, wickets, overs, runs_last_5, wickets_last_5]
+  # Get the feature names from the training data
+  feature_names = X_train.columns
+  # Convert the prediction array to a DataFrame with feature names
+  prediction_df = pd.DataFrame([prediction_array], columns=feature_names)
+  pred = model.predict(prediction_df)
+  return int(round(pred[0]))
+
+# Re-running the example usage of the predict_score function
+predicted_total = predict_score(runs=100, wickets=2, overs=10.0, runs_last_5=40, wickets_last_5=1)
+print(f"Predicted Total Score: {predicted_total}")
+
+# Example usage of the predict_score function
+predicted_total = predict_score(runs=100, wickets=2, overs=10.0, runs_last_5=40, wickets_last_5=1)
+print(f"Predicted Total Score: {predicted_total}")
+
+from seaborn import barplot
+
+# Define the models dictionary with the trained Linear Regression model's R2 score
+models = {'Linear Regression': r2}
+
+model_names = list(models.keys())
+accuracy = list(map(float, models.values()))
+
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 6))
+barplot(x=model_names, y=accuracy)
+plt.title('Model Accuracy (R2 Score)')
+plt.xlabel('Model')
+plt.ylabel('R2 Score')
+plt.ylim(0, 1) # R2 score ranges from -inf to 1, usually 0 to 1 for good models
+plt.show()
+
+# ==========================================
+# Compare Multiple Linear Regression with Other ML Models
+# Performance Comparison for Runs Scored Prediction
+# ==========================================
+
+import pandas as pd
+import numpy as np
+import zipfile
+from google.colab import files
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# Models
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+
+# ------------------------------------------
+# 1. Upload ZIP File
+# ------------------------------------------
+uploaded = files.upload()
+
+# ------------------------------------------
+# 2. Extract ZIP
+# ------------------------------------------
+with zipfile.ZipFile('archive (4).zip', 'r') as zip_ref:
+    zip_ref.extractall('/content/')
+
+# ------------------------------------------
+# 3. Load Dataset
+# ------------------------------------------
+data = pd.read_csv('/content/data.csv')
+
+print("Dataset Shape :", data.shape)
+
+# Drop irrelevant/non-numeric columns
+columns_to_drop = ['mid', 'date', 'venue', 'batting_team', 'bowling_team', 'batsman', 'bowler', 'striker', 'non-striker']
+data = data.drop(columns_to_drop, axis=1)
+print(f'Shape after dropping irrelevant columns: {data.shape}')
+
+# ------------------------------------------
+# 4. Features and Target
+# Last column = Runs Scored
+# ------------------------------------------
+X = data.iloc[:, :-1]
+y = data.iloc[:, -1]
+
+# ------------------------------------------
+# 5. Train-Test Split
+# ------------------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ------------------------------------------
+# 6. Define Models
+# ------------------------------------------
+models = {
+    "Linear Regression": LinearRegression(),
+    "Decision Tree": DecisionTreeRegressor(random_state=42),
+    "Random Forest": RandomForestRegressor(n_estimators=100, random_state=42),
+    "KNN Regressor": KNeighborsRegressor(n_neighbors=5)
+}
+
+# ------------------------------------------
+# 7. Train + Compare
+# ------------------------------------------
+results = []
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test, y_pred)
+
+    results.append([name, mae, rmse, r2])
+
+# ------------------------------------------
+# 8. Show Results
+# ------------------------------------------
+results_df = pd.DataFrame(results, columns=[
+    "Model", "MAE", "RMSE", "R2 Score"
+])
+
+print("\nPerformance Comparison:")
+print(results_df.sort_values(by="R2 Score", ascending=False))
